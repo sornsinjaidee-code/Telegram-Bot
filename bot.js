@@ -1,4 +1,4 @@
-const { TelegramClient } = require("telegram");
+Const { TelegramClient } = require("telegram");
 const { StringSession } = require("telegram/sessions");
 const { NewMessage } = require("telegram/events");
 const axios = require("axios");
@@ -63,6 +63,8 @@ app.get('/', (req, res) => {
         <div class="note">4. คัดลอก <strong>api_id</strong> และ <strong>api_hash</strong></div>
       </div>
       
+      
+
       <div class="step">
         <span class="step-num">2</span>
         <strong>กรอกข้อมูลด้านล่าง</strong>
@@ -88,6 +90,10 @@ app.get('/', (req, res) => {
         <label class="label">📝 ชื่อกระเป๋า (ไม่บังคับ)</label>
         <input type="text" name="walletName" placeholder="กระเป๋าหลัก">
         
+        <label class="label">🔔 Discord Webhook URL</label>
+        <input type="text" name="webhookUrl" placeholder="https://discord.com/api/webhooks/...">
+        <div class="note">สำหรับแจ้งเตือนเมื่อรับซองสำเร็จ (ปล่อยว่างได้)</div>
+
         <button type="submit">✅ บันทึกและเริ่มใช้งาน</button>
       </form>
       
@@ -158,14 +164,16 @@ app.post('/save-config', async (req, res) => {
     apiHash: req.body.apiHash,
     phoneNumber: req.body.phoneNumber,
     walletNumber: req.body.walletNumber,
-    walletName: req.body.walletName || "กระเป๋าหลัก"
+    walletName: req.body.walletName || "กระเป๋าหลัก",
+    webhookUrl: req.body.webhookUrl // เพิ่มบรรทัดนี้
   };
   
   const envContent = `API_ID=${CONFIG.apiId}
 API_HASH=${CONFIG.apiHash}
 PHONE_NUMBER=${CONFIG.phoneNumber}
 WALLET_NUMBER=${CONFIG.walletNumber}
-WALLET_NAME=${CONFIG.walletName}`;
+WALLET_NAME=${CONFIG.walletName}
+WEBHOOK_URL=${CONFIG.webhookUrl || ''}`; // เพิ่มบรรทัดนี้
   
   fs.writeFileSync('.env', envContent);
   
@@ -218,6 +226,529 @@ app.post('/verify-2fa', (req, res) => {
     <h1>✅ กำลังตรวจสอบ 2FA</h1>
     <div class="info">⏳ กรุณารอสักครู่...</div>
     <script>setTimeout(()=>location.href='/',3000)</script>
+  `));
+});
+
+app.post('/skip-2fa', (req, res) => {
+  passwordCode = "";
+  res.send(html("Processing", `
+    <h1>✅ กำลังเข้าสู่ระบบ</h1>
+    <div class="info">⏳ กรุณารอสักครู่...</div>
+    <script>setTimeout(()=>location.href='/',3000)</script>
+  `));
+});
+
+app.listen(10000, () => {
+  console.log(`🌐 Server: http://localhost:10000`);
+});
+
+setInterval(() => {
+  const url = process.env.RENDER_EXTERNAL_URL || `http://localhost:10000`;
+  axios.get(url).catch(() => {});
+}, 10 * 60 * 1000);
+
+const thaiMap = {"เก้าสิบเก้า":"99","เก้าสิบแปด":"98","เก้าสิบเจ็ด":"97","เก้าสิบหก":"96","เก้าสิบห้า":"95","เก้าสิบสี่":"94","เก้าสิบสาม":"93","เก้าสิบสอง":"92","เก้าสิบเอ็ด":"91","เก้าสิบ":"90","แปดสิบเก้า":"89","แปดสิบแปด":"88","แปดสิบเจ็ด":"87","แปดสิบหก":"86","แปดสิบห้า":"85","แปดสิบสี่":"84","แปดสิบสาม":"83","แปดสิบสอง":"82","แปดสิบเอ็ด":"81","แปดสิบ":"80","เจ็ดสิบเก้า":"79","เจ็ดสิบแปด":"78","เจ็ดสิบเจ็ด":"77","เจ็ดสิบหก":"76","เจ็ดสิบห้า":"75","เจ็ดสิบสี่":"74","เจ็ดสิบสาม":"73","เจ็ดสิบสอง":"72","เจ็ดสิบเอ็ด":"71","เจ็ดสิบ":"70","หกสิบเก้า":"69","หกสิบแปด":"68","หกสิบเจ็ด":"67","หกสิบหก":"66","หกสิบห้า":"65","หกสิบสี่":"64","หกสิบสาม":"63","หกสิบสอง":"62","หกสิบเอ็ด":"61","หกสิบ":"60","ห้าสิบเก้า":"59","ห้าสิบแปด":"58","ห้าสิบเจ็ด":"57","ห้าสิบหก":"56","ห้าสิบห้า":"55","ห้าสิบสี่":"54","ห้าสิบสาม":"53","ห้าสิบสอง":"52","ห้าสิบเอ็ด":"51","ห้าสิบ":"50","สี่สิบเก้า":"49","สี่สิบแปด":"48","สี่สิบเจ็ด":"47","สี่สิบหก":"46","สี่สิบห้า":"45","สี่สิบสี่":"44","สี่สิบสาม":"43","สี่สิบสอง":"42","สี่สิบเอ็ด":"41","สี่สิบ":"40","สามสิบเก้า":"39","สามสิบแปด":"38","สามสิบเจ็ด":"37","สามสิบหก":"36","สามสิบห้า":"35","สามสิบสี่":"34","สามสิบสาม":"33","สามสิบสอง":"32","สามสิบเอ็ด":"31","สามสิบ":"30","ยี่สิบเก้า":"29","ยี่สิบแปด":"28","ยี่สิบเจ็ด":"27","ยี่สิบหก":"26","ยี่สิบห้า":"25","ยี่สิบสี่":"24","ยี่สิบสาม":"23","ยี่สิบสอง":"22","ยี่สิบเอ็ด":"21","ยี่สิบ":"20","สิบเก้า":"19","สิบแปด":"18","สิบเจ็ด":"17","สิบหก":"16","สิบห้า":"15","สิบสี่":"14","สิบสาม":"13","สิบสอง":"12","สิบเอ็ด":"11","สิบ":"10","ศูนย์":"0","หนึ่ง":"1","สอง":"2","สาม":"3","สี่":"4","ห้า":"5","หก":"6","เจ็ด":"7","แปด":"8","เก้า":"9","เอ็ด":"1","ยี่":"2"};
+
+function hasThai(text) {
+  return /[\u0E00-\u0E7F]/.test(text);
+}
+
+function decodeThai(text) {
+  let decoded = text.replace(/\s+/g, "");
+  const keys = Object.keys(thaiMap).sort((a, b) => b.length - a.length);
+  for (const thai of keys) {
+    decoded = decoded.replace(new RegExp(thai, "gi"), thaiMap[thai]);
+  }
+  return decoded.replace(/[^a-zA-Z0-9]/g, "");
+}
+
+function isLikelyVoucher(s) {
+  if (!s || s.length < 20 || s.length > 64) return false;
+  return /^[a-zA-Z0-9]+$/.test(s);
+}
+
+async function decodeQR(buffer) {
+  try {
+    const image = await Jimp.read(buffer);
+    const data = {
+      data: new Uint8ClampedArray(image.bitmap.data),
+      width: image.bitmap.width,
+      height: image.bitmap.height
+    };
+    const code = jsQR(data.data, data.width, data.height);
+    return code?.data || null;
+  } catch {
+    return null;
+  }
+}
+
+function extractVoucher(text) {
+  if (!text) return null;
+  const results = [];
+  const urlRegex = /https?:\/\/gift\.truemoney\.com\/campaign\/?\??.*?v=([^\s&]+)/gi;
+  const matches = [...text.matchAll(urlRegex)];
+  for (const match of matches) {
+    let voucher = match[1].trim();
+    if (hasThai(voucher)) voucher = decodeThai(voucher);
+    voucher = voucher.replace(/\s/g, '');
+    if (isLikelyVoucher(voucher)) results.push(voucher);
+  }
+  return results.length > 0 ? results : null;
+}
+
+const recentSeen = new Set();
+
+// ========================================
+// ⚡ ฟังก์ชันหลัก: ใช้ tw-voucher แทน Proxy
+// ========================================
+async function sendWebhookNotification(amount, voucher, speed) {
+    const webhookUrl = CONFIG.webhookUrl;
+    if (!webhookUrl || !webhookUrl.startsWith('http')) return;
+
+    const data = {
+        embeds: [{
+            title: "✅ รับซอง TrueMoney สำเร็จ",
+            color: 3066993, // สีเขียว
+            fields: [
+                { name: "💵 จำนวนเงิน", value: `**${amount.toFixed(2)}** บาท`, inline: true },
+                { name: "💰 ยอดเงินสะสม", value: `**${totalAmount.toFixed(2)}** บาท`, inline: true },
+                { name: "⚡ ความเร็ว", value: `**${speed}**ms`, inline: false },
+                { name: "📱 แหล่งที่มา", value: "Webhook Bot", inline: true },
+                { name: "🔗 ลิงก์", value: `https://gift.truemoney.com/campaign/?v=${voucher}`, inline: false }
+            ],
+            footer: { text: `⚡ ดักซองไว • วันนี้ เวลา ${new Date().toLocaleTimeString('th-TH')}` }
+        }]
+    };
+
+    try {
+        await axios.post(webhookUrl, data);
+    } catch (err) {
+        console.error("❌ Webhook Error:", err.message);
+    }
+}
+
+async function processVoucher(voucher) {
+    if (recentSeen.has(voucher)) return;
+    recentSeen.add(voucher);
+    setTimeout(() => recentSeen.delete(voucher), 30000);
+    
+    const startTime = Date.now();
+    const phone = CONFIG.walletNumber.replace(/\s/g, '');
+    const voucherUrl = `https://gift.truemoney.com/campaign/?v=${voucher}`;
+    
+    try {
+        const result = await twvoucher(phone, voucherUrl);
+        const speed = Date.now() - startTime;
+        
+        if (result && result.amount) {
+            const amount = parseFloat(result.amount);
+            totalClaimed++;
+            totalAmount += amount;
+            
+            console.log(`✅ [${speed}ms] +${amount}฿`);
+            await sendWebhookNotification(amount, voucher, speed);
+        } else {
+            totalFailed++;
+            console.log(`❌ ${result?.message || 'Failed'}`);
+        }
+    } catch (err) {
+        totalFailed++;
+        console.log(`❌ ${err.message}`);
+    }
+} 
+
+
+async function startBot() {
+  if (!CONFIG) return;
+  
+  const SESSION_FILE = "session.txt";
+  let sessionString = "";
+  
+  if (fs.existsSync(SESSION_FILE)) {
+    sessionString = fs.readFileSync(SESSION_FILE, "utf8").trim();
+  }
+  
+  const session = new StringSession(sessionString);
+  client = new TelegramClient(session, CONFIG.apiId, CONFIG.apiHash, {
+    connectionRetries: 5,
+    useWSS: false,
+    autoReconnect: true
+  });
+  
+  console.log("🚀 Starting bot...\n");
+  
+  try {
+    if (sessionString) {
+      console.log("🔐 Connecting...");
+      await client.start({ 
+        botAuthToken: false,
+        onError: e => console.error(e.message)
+      });
+      loginStep = "logged-in";
+      console.log("✅ Connected!\n");
+    } else {
+      console.log("🔐 Login\n");
+      loginStep = "need-send-otp";
+      
+      await client.start({
+        phoneNumber: async () => {
+          while (loginStep === "need-send-otp") {
+            await new Promise(r => setTimeout(r, 1000));
+          }
+          return CONFIG.phoneNumber;
+        },
+        password: async () => {
+          loginStep = "need-password";
+          while (loginStep === "need-password" && passwordCode === "") {
+            await new Promise(r => setTimeout(r, 1000));
+          }
+          return passwordCode || undefined;
+        },
+        phoneCode: async () => {
+          while (!otpCode) {
+            await new Promise(r => setTimeout(r, 1000));
+          }
+          const code = otpCode;
+          otpCode = "";
+          return code;
+        },
+        onError: e => console.error(e.message),
+      });
+      
+      const newSession = client.session.save();
+      fs.writeFileSync(SESSION_FILE, newSession, "utf8");
+      loginStep = "logged-in";
+      console.log("\n✅ Login success!\n");
+    }
+  } catch (err) {
+    console.error("❌ Login failed:", err.message);
+    return;
+  }
+  
+  console.log("👂 Listening...\n");
+  
+  client.addEventHandler(async (event) => {
+    try {
+      const msg = event.message;
+      if (!msg) return;
+      
+      if (msg.media?.className === "MessageMediaPhoto") {
+        const buffer = await client.downloadMedia(msg.media, { workers: 1 });
+        if (buffer) {
+          const qrData = await decodeQR(buffer);
+          if (qrData) {
+            const vouchers = extractVoucher(qrData);
+            if (vouchers) {
+              for (const v of vouchers) {
+                await processVoucher(v);
+              }
+            }
+          }
+        }
+      }
+      
+      if (msg.message) {
+        const vouchers = extractVoucher(msg.message);
+        if (vouchers) {
+          for (const v of vouchers) {
+            await processVoucher(v);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("❌", err.message);
+    }
+  }, new NewMessage({ incoming: true }));
+  
+  console.log("✅ Bot ready!\n");
+}
+
+// ... (โค้ดส่วนบนทั้งหมดคงเดิมจนถึงบรรทัดสุดท้าย)
+
+if (fs.existsSync('.env')) {
+    require('dotenv').config();
+    if (process.env.API_ID && process.env.API_HASH) {
+        CONFIG = {
+            apiId: parseInt(process.env.API_ID),
+            apiHash: process.env.API_HASH,
+            phoneNumber: process.env.PHONE_NUMBER,
+            walletNumber: process.env.WALLET_NUMBER,
+            walletName: process.env.WALLET_NAME || "กระเป๋าหลัก",
+            webhookUrl: process.env.WEBHOOK_URL // ดึงค่าจาก env ถ้ามี
+        };
+        startBot();
+    }
+} else {
+    // เพิ่มส่วนนี้เพื่อให้ Express ทำงานแม้ไม่มีไฟล์ .env เพื่อให้ผู้ใช้กรอกข้อมูลผ่านหน้าเว็บได้
+    console.log("🌐 ไม่พบไฟล์ .env กรุณาตั้งค่าผ่านหน้าเว็บ: http://localhost:10000");
+      }    <h1>✅ กำลังตรวจสอบ OTP</h1>
+    <div class="info">⏳ กรุณารอสักครู่...</div>
+    <script>setTimeout(()=>location.href='/',3000)</script>
+  `));
+});
+
+app.post('/verify-2fa', (req, res) => {
+  passwordCode = req.body.password;
+  res.send(html("Processing", `
+    <h1>✅ กำลังตรวจสอบ 2FA</h1>
+    <div class="info">⏳ กรุณารอสักครู่...</div>
+    <script>setTimeout(()=>location.href='/',3000)</script>
+  `));
+});
+
+app.post('/skip-2fa', (req, res) => {
+  passwordCode = "";
+  res.send(html("Processing", `
+    <h1>✅ กำลังเข้าสู่ระบบ</h1>
+    <div class="info">⏳ กรุณารอสักครู่...</div>
+    <script>setTimeout(()=>location.href='/',3000)</script>
+  `));
+});
+
+app.listen(10000, () => {
+  console.log(`🌐 Server: http://localhost:10000`);
+});
+
+setInterval(() => {
+  const url = process.env.RENDER_EXTERNAL_URL || `http://localhost:10000`;
+  axios.get(url).catch(() => {});
+}, 10 * 60 * 1000);
+
+const thaiMap = {"เก้าสิบเก้า":"99","เก้าสิบแปด":"98","เก้าสิบเจ็ด":"97","เก้าสิบหก":"96","เก้าสิบห้า":"95","เก้าสิบสี่":"94","เก้าสิบสาม":"93","เก้าสิบสอง":"92","เก้าสิบเอ็ด":"91","เก้าสิบ":"90","แปดสิบเก้า":"89","แปดสิบแปด":"88","แปดสิบเจ็ด":"87","แปดสิบหก":"86","แปดสิบห้า":"85","แปดสิบสี่":"84","แปดสิบสาม":"83","แปดสิบสอง":"82","แปดสิบเอ็ด":"81","แปดสิบ":"80","เจ็ดสิบเก้า":"79","เจ็ดสิบแปด":"78","เจ็ดสิบเจ็ด":"77","เจ็ดสิบหก":"76","เจ็ดสิบห้า":"75","เจ็ดสิบสี่":"74","เจ็ดสิบสาม":"73","เจ็ดสิบสอง":"72","เจ็ดสิบเอ็ด":"71","เจ็ดสิบ":"70","หกสิบเก้า":"69","หกสิบแปด":"68","หกสิบเจ็ด":"67","หกสิบหก":"66","หกสิบห้า":"65","หกสิบสี่":"64","หกสิบสาม":"63","หกสิบสอง":"62","หกสิบเอ็ด":"61","หกสิบ":"60","ห้าสิบเก้า":"59","ห้าสิบแปด":"58","ห้าสิบเจ็ด":"57","ห้าสิบหก":"56","ห้าสิบห้า":"55","ห้าสิบสี่":"54","ห้าสิบสาม":"53","ห้าสิบสอง":"52","ห้าสิบเอ็ด":"51","ห้าสิบ":"50","สี่สิบเก้า":"49","สี่สิบแปด":"48","สี่สิบเจ็ด":"47","สี่สิบหก":"46","สี่สิบห้า":"45","สี่สิบสี่":"44","สี่สิบสาม":"43","สี่สิบสอง":"42","สี่สิบเอ็ด":"41","สี่สิบ":"40","สามสิบเก้า":"39","สามสิบแปด":"38","สามสิบเจ็ด":"37","สามสิบหก":"36","สามสิบห้า":"35","สามสิบสี่":"34","สามสิบสาม":"33","สามสิบสอง":"32","สามสิบเอ็ด":"31","สามสิบ":"30","ยี่สิบเก้า":"29","ยี่สิบแปด":"28","ยี่สิบเจ็ด":"27","ยี่สิบหก":"26","ยี่สิบห้า":"25","ยี่สิบสี่":"24","ยี่สิบสาม":"23","ยี่สิบสอง":"22","ยี่สิบเอ็ด":"21","ยี่สิบ":"20","สิบเก้า":"19","สิบแปด":"18","สิบเจ็ด":"17","สิบหก":"16","สิบห้า":"15","สิบสี่":"14","สิบสาม":"13","สิบสอง":"12","สิบเอ็ด":"11","สิบ":"10","ศูนย์":"0","หนึ่ง":"1","สอง":"2","สาม":"3","สี่":"4","ห้า":"5","หก":"6","เจ็ด":"7","แปด":"8","เก้า":"9","เอ็ด":"1","ยี่":"2"};
+
+function hasThai(text) {
+  return /[\u0E00-\u0E7F]/.test(text);
+}
+
+function decodeThai(text) {
+  let decoded = text.replace(/\s+/g, "");
+  const keys = Object.keys(thaiMap).sort((a, b) => b.length - a.length);
+  for (const thai of keys) {
+    decoded = decoded.replace(new RegExp(thai, "gi"), thaiMap[thai]);
+  }
+  return decoded.replace(/[^a-zA-Z0-9]/g, "");
+}
+
+function isLikelyVoucher(s) {
+  if (!s || s.length < 20 || s.length > 64) return false;
+  return /^[a-zA-Z0-9]+$/.test(s);
+}
+
+async function decodeQR(buffer) {
+  try {
+    const image = await Jimp.read(buffer);
+    const data = {
+      data: new Uint8ClampedArray(image.bitmap.data),
+      width: image.bitmap.width,
+      height: image.bitmap.height
+    };
+    const code = jsQR(data.data, data.width, data.height);
+    return code?.data || null;
+  } catch {
+    return null;
+  }
+}
+
+function extractVoucher(text) {
+  if (!text) return null;
+  const results = [];
+  const urlRegex = /https?:\/\/gift\.truemoney\.com\/campaign\/?\??.*?v=([^\s&]+)/gi;
+  const matches = [...text.matchAll(urlRegex)];
+  for (const match of matches) {
+    let voucher = match[1].trim();
+    if (hasThai(voucher)) voucher = decodeThai(voucher);
+    voucher = voucher.replace(/\s/g, '');
+    if (isLikelyVoucher(voucher)) results.push(voucher);
+  }
+  return results.length > 0 ? results : null;
+}
+
+const recentSeen = new Set();
+
+// ========================================
+// ⚡ ฟังก์ชันหลัก: ใช้ tw-voucher แทน Proxy
+// ========================================
+async function sendWebhookNotification(amount, voucher, speed) {
+    const webhookUrl = CONFIG.webhookUrl;
+    if (!webhookUrl || !webhookUrl.startsWith('http')) return;
+
+    const data = {
+        embeds: [{
+            title: "✅ รับซอง TrueMoney สำเร็จ",
+            color: 3066993, // สีเขียว
+            fields: [
+                { name: "💵 จำนวนเงิน", value: `**${amount.toFixed(2)}** บาท`, inline: true },
+                { name: "💰 ยอดเงินสะสม", value: `**${totalAmount.toFixed(2)}** บาท`, inline: true },
+                { name: "⚡ ความเร็ว", value: `**${speed}**ms`, inline: false },
+                { name: "📱 แหล่งที่มา", value: "Webhook Bot", inline: true },
+                { name: "🔗 ลิงก์", value: `https://gift.truemoney.com/campaign/?v=${voucher}`, inline: false }
+            ],
+            footer: { text: `⚡ ดักซองไว • วันนี้ เวลา ${new Date().toLocaleTimeString('th-TH')}` }
+        }]
+    };
+
+    try {
+        await axios.post(webhookUrl, data);
+    } catch (err) {
+        console.error("❌ Webhook Error:", err.message);
+    }
+}
+
+async function processVoucher(voucher) {
+    if (recentSeen.has(voucher)) return;
+    recentSeen.add(voucher);
+    setTimeout(() => recentSeen.delete(voucher), 30000);
+    
+    const startTime = Date.now();
+    const phone = CONFIG.walletNumber.replace(/\s/g, '');
+    const voucherUrl = `https://gift.truemoney.com/campaign/?v=${voucher}`;
+    
+    try {
+        const result = await twvoucher(phone, voucherUrl);
+        const speed = Date.now() - startTime;
+        
+        if (result && result.amount) {
+            const amount = parseFloat(result.amount);
+            totalClaimed++;
+            totalAmount += amount;
+            
+            console.log(`✅ [${speed}ms] +${amount}฿`);
+            await sendWebhookNotification(amount, voucher, speed);
+        } else {
+            totalFailed++;
+            console.log(`❌ ${result?.message || 'Failed'}`);
+        }
+    } catch (err) {
+        totalFailed++;
+        console.log(`❌ ${err.message}`);
+    }
+} 
+
+
+async function startBot() {
+  if (!CONFIG) return;
+  
+  const SESSION_FILE = "session.txt";
+  let sessionString = "";
+  
+  if (fs.existsSync(SESSION_FILE)) {
+    sessionString = fs.readFileSync(SESSION_FILE, "utf8").trim();
+  }
+  
+  const session = new StringSession(sessionString);
+  client = new TelegramClient(session, CONFIG.apiId, CONFIG.apiHash, {
+    connectionRetries: 5,
+    useWSS: false,
+    autoReconnect: true
+  });
+  
+  console.log("🚀 Starting bot...\n");
+  
+  try {
+    if (sessionString) {
+      console.log("🔐 Connecting...");
+      await client.start({ 
+        botAuthToken: false,
+        onError: e => console.error(e.message)
+      });
+      loginStep = "logged-in";
+      console.log("✅ Connected!\n");
+    } else {
+      console.log("🔐 Login\n");
+      loginStep = "need-send-otp";
+      
+      await client.start({
+        phoneNumber: async () => {
+          while (loginStep === "need-send-otp") {
+            await new Promise(r => setTimeout(r, 1000));
+          }
+          return CONFIG.phoneNumber;
+        },
+        password: async () => {
+          loginStep = "need-password";
+          while (loginStep === "need-password" && passwordCode === "") {
+            await new Promise(r => setTimeout(r, 1000));
+          }
+          return passwordCode || undefined;
+        },
+        phoneCode: async () => {
+          while (!otpCode) {
+            await new Promise(r => setTimeout(r, 1000));
+          }
+          const code = otpCode;
+          otpCode = "";
+          return code;
+        },
+        onError: e => console.error(e.message),
+      });
+      
+      const newSession = client.session.save();
+      fs.writeFileSync(SESSION_FILE, newSession, "utf8");
+      loginStep = "logged-in";
+      console.log("\n✅ Login success!\n");
+    }
+  } catch (err) {
+    console.error("❌ Login failed:", err.message);
+    return;
+  }
+  
+  console.log("👂 Listening...\n");
+  
+  client.addEventHandler(async (event) => {
+    try {
+      const msg = event.message;
+      if (!msg) return;
+      
+      if (msg.media?.className === "MessageMediaPhoto") {
+        const buffer = await client.downloadMedia(msg.media, { workers: 1 });
+        if (buffer) {
+          const qrData = await decodeQR(buffer);
+          if (qrData) {
+            const vouchers = extractVoucher(qrData);
+            if (vouchers) {
+              for (const v of vouchers) {
+                await processVoucher(v);
+              }
+            }
+          }
+        }
+      }
+      
+      if (msg.message) {
+        const vouchers = extractVoucher(msg.message);
+        if (vouchers) {
+          for (const v of vouchers) {
+            await processVoucher(v);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("❌", err.message);
+    }
+  }, new NewMessage({ incoming: true }));
+  
+  console.log("✅ Bot ready!\n");
+}
+
+// ... (โค้ดส่วนบนทั้งหมดคงเดิมจนถึงบรรทัดสุดท้าย)
+
+if (fs.existsSync('.env')) {
+    require('dotenv').config();
+    if (process.env.API_ID && process.env.API_HASH) {
+        CONFIG = {
+            apiId: parseInt(process.env.API_ID),
+            apiHash: process.env.API_HASH,
+            phoneNumber: process.env.PHONE_NUMBER,
+            walletNumber: process.env.WALLET_NUMBER,
+            walletName: process.env.WALLET_NAME || "กระเป๋าหลัก",
+            webhookUrl: process.env.WEBHOOK_URL // ดึงค่าจาก env ถ้ามี
+        };
+        startBot();
+    }
+} else {
+    // เพิ่มส่วนนี้เพื่อให้ Express ทำงานแม้ไม่มีไฟล์ .env เพื่อให้ผู้ใช้กรอกข้อมูลผ่านหน้าเว็บได้
+    console.log("🌐 ไม่พบไฟล์ .env กรุณาตั้งค่าผ่านหน้าเว็บ: http://localhost:10000");
+                }eout(()=>location.href='/',3000)</script>
   `));
 });
 
